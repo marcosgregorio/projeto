@@ -134,4 +134,8 @@ public class CrudCamisetaController implements Serializable {
 	public void setRendNovoCadastro(Boolean rendNovoCadastro) {
 		this.rendNovoCadastro = rendNovoCadastro;
 	}
+	
+	public String getTextoTamanho() {
+		return "Tamanho";
+	}
 }
