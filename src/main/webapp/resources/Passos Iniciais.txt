@@ -211,6 +211,24 @@ Salve a configuração e inicie o servidor de aplicação
 No terminal do computador que está executando a aplicação digite ipconfig (Windows) ou ifconfig (Linux) para descobrir seu endereço de IPv4 na rede local
 Acesse em um navegador, através de qualquer dispositivo conectado localmente na mesma rede, o endereço enderecoip:8080/projeto
 
+Ordem de eventos:
+1) User clicks button in client
+2) onclick JavaScript code is executed
+3) JavaScript prepares ajax request based on process and current HTML DOM tree
+4) onstart JavaScript code is executed
+5) JavaScript sends ajax request from client to server
+6) JSF retrieves ajax request
+7) JSF processes the request lifecycle on JSF component tree based on process
+8) actionListener JSF backing bean method is executed
+9) action JSF backing bean method is executed
+10) JSF prepares ajax response based on update and current JSF component tree
+11) JSF sends ajax response from server to client
+12) JavaScript retrieves ajax response
+if HTTP response status is 200, onsuccess JavaScript code is executed
+else if HTTP response status is 500, onerror JavaScript code is executed
+13) JavaScript performs update based on ajax response and current HTML DOM tree
+14) oncomplete JavaScript code is executed
+
 Guia para desenvolvimento do projeto final integrador
 a) Comece pela modelagem e criação da base de dados
 Lembre de configurar adequadamente a conexão no servidor de aplicação (passo 17) 
