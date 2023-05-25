@@ -18,7 +18,6 @@
     <!-- O template só serve para uma melhor organização do código e para evitar a repetição de código -->
     <ui:define name="content">
     
-    cliente
     
     	<!-- Define formulário para Dialogs (elementos estilo Pop-up) -->
     	<!-- Lembre-se que o uso de formulários só não é necessário para elementos que são estáticos (sem ação, animação, conteúdo dinâmico) -->     
@@ -104,14 +103,31 @@
 	                </p:commandButton>
 	            </p:toolbarGroup>
 	        </p:toolbar>
-	
+
 	        <p:dataTable id="dt-clientes" widgetVar="dtclientes" var="cliente" value="#{crudClientesController.listaClientes}">
 	            <f:facet name="header">
-	                <div>
-	                    <span style="font-weight: bold">Clientes</span>
+	            <div style="display:flex; gap:2em">
+	                <div>	
+	                    <span style="font-weight: bold">Nome</span>
+						 <div>
+		                	<div class="ui-inputgroup">
+		            	        <p:inputText value="#{crudClientesController.inputSearchNome}" placeholder="Nome"/>
+		        	            <p:commandButton actionListener="#{crudClientesController.filtrar()}" icon="pi pi-search" styleClass="ui-button-warning"/>
+	   		            	</div>
+			            </div>
 	                </div>
+	                <div>	
+	                    <span style="font-weight: bold">Gênero</span>
+						 	<div>						 	
+							  	<p:selectCheckboxMenu id="menu" value="#{checkboxView.selectedCities}" label="Selecione..." style="width: 15rem"
+	                                filter="true" filterMatchMode="startsWith" panelStyle="width: 15rem" scrollHeight="250"
+	                                dynamic="true">
+				            		<f:selectItems value="#{checkboxView.cities}"/>
+				        		</p:selectCheckboxMenu>
+						 	</div>
+	                </div>	            
+	            </div>
 	            </f:facet>
-	
 	            <p:column headerText="Id Cliente">
 	                <h:outputText value="#{cliente.id_cliente}" />
 	            </p:column>

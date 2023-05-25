@@ -101,6 +101,38 @@ public class ClienteDAO implements Serializable {
         return clientes;
     }
     
+    public List<Cliente> listaFiltrado(String filtro1) {
+    	List<Cliente> clientes = new ArrayList<Cliente>();
+    	this.sql = "SELECT * FROM clientes";
+    	if (!filtro1.equals(""))
+    			this.sql += "WHERE nome ilike '%" + filtro1 + "%'";
+    	try {
+    		this.prepareQuery();
+			this.result = this.preparedStatement.executeQuery();
+			while (result.next()) {
+				Cliente cliente = new Cliente();
+				cliente.setEmail(this.result.getString("email"));
+				cliente.setId_cliente(this.result.getInt("id_cliente"));
+				cliente.setNome(this.result.getString("nome"));
+				cliente.setNome_social(this.result.getString("nome_social"));
+				cliente.setCpf(this.result.getString("cpf"));
+				cliente.setAltura(this.result.getDouble("altura"));
+				cliente.setMassa(this.result.getDouble("massa"));
+				cliente.setGenero(this.result.getString("genero"));
+				cliente.setIdade(this.result.getShort("idade"));
+				cliente.setEmail(this.result.getString("email"));
+				cliente.setTelefone(this.result.getInt("telefone"));
+				cliente.setEndereco(this.result.getString("endereco"));
+				clientes.add(cliente);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			this.closeDbConnection();
+		}
+        return clientes;
+    }
+    
     public Boolean insert(Cliente cliente) {
     	this.sql = "INSERT INTO clientes (nome, "
 	    			+ "email, "

@@ -43,6 +43,8 @@ public class CrudClientesController implements Serializable {
 		
 		private Boolean rendNovoCadastro;
 		
+		private String inputSearchNome;
+		
 		//Anotação que força execução do método após o construtor da classe ser executado
 	    @PostConstruct
 	    public void init() {
@@ -107,6 +109,10 @@ public class CrudClientesController implements Serializable {
 			PrimeFaces.current().ajax().update("form:messages");
 		}
 		
+		public void filtrar() {
+			this.setListaClientes(this.clienteDAO.listaFiltrado(this.getInputSearchNome()));
+		}
+		
 
 		public void setListaClientes(List<Cliente> listaClientes) {
 			this.listaClientes = listaClientes;
@@ -150,5 +156,13 @@ public class CrudClientesController implements Serializable {
 
 		public List<Cliente> getListaClientes() {
 			return listaClientes;
+		}
+
+		public String getInputSearchNome() {
+			return inputSearchNome;
+		}
+
+		public void setInputSearchNome(String inputSearchNome) {
+			this.inputSearchNome = inputSearchNome;
 		}
 }
