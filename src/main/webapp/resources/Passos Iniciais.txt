@@ -1,0 +1,263 @@
+Downloads e instalações
+OBS: Use somente as versões especificadas
+1) Baixar e instalar o JDK v17 ou v19+ (evitar uso da v18)
+OBS: Já está instalado no PC do Laboratório
+https://www.oracle.com/br/java/technologies/downloads/
+
+2) Baixar e instalar o PostgreSQL v15+ e o pgAdmin
+OBS: No Windows, ao instalar o postgres já é instalado o pgAdmin
+OBS: No Windows será solicitado a criação de uma senha, informe como senha "postgres" (será usada no passo 7)
+OBS: Já está instalado no PC do Laboratório
+OBS: No Linux você deve alterar a senha do Postgres via terminal, execute o seguinte comando: sudo -u postgres psql
+https://www.postgresql.org/download/
+https://www.pgadmin.org/download/
+
+3) Baixar e descompactar o Wildfly 
+OBS: Deve ser a versão v26.1.2.Final (Jakarta EE 8 Full & Web Distribution)
+https://www.wildfly.org/downloads/
+
+4) Baixar e descompactar o Eclipse IDE for Enterprise Java and Web Developers
+OBS: Deve ser a versão 2022-09, v4.25
+https://www.eclipse.org/downloads/packages/
+
+5) Baixar e salvar o JDBC Driver (versão mais atual para o Java 8+)
+https://jdbc.postgresql.org/download/
+
+6) Baixar e instalar o GitHub Desktop
+OBS: Já está instalado no PC do Laboratório
+https://desktop.github.com/
+
+Configurações iniciais
+No pgAdmin
+7) Crie um novo servidor de base de dados
+OBS: Clique na setinha ao lado de Servers, se mostrar um servidor chamado postgres pode pular esse passo
+Botão direito sobre Servers, create, new server
+Na aba General preencha o Name com "postgres" (ou outro de sua escolha)
+Na aba Connection preencha o host com "localhost", o Username e o Password com o usuário (postgres) e senha (postgres) do PostgreSQL
+OBS: a senha do banco é definida na instalação (passo 2)
+
+8) Abra o servidor criado e crie uma nova base de dados para a aplicação Web
+Botão direito sobre Databases, create, database
+Na aba General preencha o Database com o nome aplicacao_db para a base de dados
+
+9) Crie um usuário no banco exclusivo para a aplicação
+Botão direito sobre o banco criado (aplicacao_db), selecione a opção Query Tool
+Execute o conjunto de comandos SQL na tela que abriu:
+
+-- Início SQL
+CREATE USER aplicacao_user PASSWORD 'aplicacao_user';
+-- Fim SQL
+
+10) Popule o banco (execute apenas uma vez)
+Botão direito sobre aplicacao_db, Query Tool
+Execute o conjunto de comandos SQL:
+
+-- Início SQL
+
+-- Remove tabelas caso já existam
+-- DROP TABLE permissao, usuario, tipo_permissao;
+
+-- Cria tabela para usuário do sistema e inicializa com dois usuários iniciais
+CREATE TABLE IF NOT EXISTS public.usuario
+(
+    id_usuario SERIAL, 
+    usuario text NOT NULL UNIQUE,
+    email text NOT NULL,
+    senha text NOT NULL,
+    CONSTRAINT usuario_pkey PRIMARY KEY (id_usuario)
+);
+
+-- Cria tabela para tipos de permissões usadas no sistema e inicializa com dois valores
+CREATE TABLE IF NOT EXISTS public.tipo_permissao
+(
+    id_tipo_permissao SERIAL,
+    permissao text NOT NULL,
+    CONSTRAINT tipo_permissao_pkey PRIMARY KEY (id_tipo_permissao)
+);
+-- Inicializa tipos de permissao do sistema
+INSERT INTO tipo_permissao (permissao) VALUES ('ADMINISTRADOR');
+INSERT INTO tipo_permissao (permissao) VALUES ('CLIENTE');
+INSERT INTO tipo_permissao (permissao) VALUES ('SERVIDOR');
+
+-- Cria tabela de relacionamento nxn entre usuários e tipos de permissões
+CREATE TABLE IF NOT EXISTS public.permissao
+(
+    id_usuario bigint NOT NULL,
+    id_tipo_permissao bigint NOT NULL,
+    CONSTRAINT permissao_pkey PRIMARY KEY (id_usuario, id_tipo_permissao),
+    CONSTRAINT permissao_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario) ON DELETE CASCADE,
+    CONSTRAINT permissao_tipo_permissao_fkey FOREIGN KEY (id_tipo_permissao) REFERENCES tipo_permissao (id_tipo_permissao) ON DELETE CASCADE
+);
+
+-- Cria tabela para cadastro de camiseta
+CREATE TABLE IF NOT EXISTS public.camiseta
+(
+    id_camiseta bigint NOT NULL,
+    tamanho "char",
+    descricao text,
+    CONSTRAINT camiseta_pkey PRIMARY KEY (id_camiseta)
+)
+
+-- Conceda permissões ao usuário do banco que será usado pela aplicação
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "public" to aplicacao_user;
+GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA "public" to aplicacao_user;
+-- Fim SQL
+
+No Terminal
+11) Crie um usuário administrador para o Wildfly
+Execute no terminal o script encontrado dentro da pasta do Wildfly/bin chamado add-user.sh
+Selecionar o tipo "a" para o usuário
+Escolher um nome e uma senha para o usuario (usuario = admin, senha = admin)
+OBS: ele notificará que já existe um usuario admin mas pode prosseguir para mudar a senha
+Confirmar (pressione enter) na escolha de grupos e confirme também na última pergunta
+
+No Eclipse
+12) Feche a janela de boas vindas do Eclipse
+
+13) Abra o Eclipse, Menu Help, Opção Eclipse Marketplace, busque e instale o JBoss Tools
+OBS: Ele demora um pouco para instalar (acompanhar pela barra de execução no canto infeiror direito)
+OBS: Ao terminar a isntalação o Eclipse solicitará para ser reiniciado, caso não o faça, feche o Eclipse e abra-o novamente
+
+14) Mude a perspectiva do Eclipse para Web Development
+No canto superior direito, clique no icone de uma janelinha com uma estrelinha amarela
+Selecione a opção Web Development
+
+15) Crie um novo servidor de aplicação
+Clique na aba inferior servers e no link que aparece abaixo (ou botão direito dentro da aba, new, server)
+Busque e selecione o servidor Wildfly 24+, (caso a opção não apareça, o passo 13 não foi executado) 
+Next duas vezes
+Selecione o como Home Directory o diretório onde o está a pasta do Wildfly
+Mude o Execution Environment para Java 17 ou 19+
+Mude o Configuration file para standalone-full.xml
+Finish
+
+16) Execute o servidor Wildfly
+Clique com o botão direito no servidor recém criado e selecione a opção start
+
+17) Teste o servidor Wildfly
+Acesse em um navegador o endereço localhost:8080 (deverá aparecer uma página do Wildfly)
+Acesse em um navegador o endereço localhost:9990 (deverá aparecer a página de administração do Wildfly)
+
+No Wildfly (navegador)
+18) Adicionar driver JDBC
+Acesse a página de aministração do Wildfly com o usuário e senha configurados no passo 11
+Clique na aba deployments, botão add, upload deployment
+Selecione o arquivo do Driver JDBC, next, finish
+
+19) Configurar o Pool de conexões com o banco de dados da aplicação
+OBS: NÃO exclua o DatasSource pré-existente chamado de ExampleDS
+Clique na aba configuration, menu subsystems, datasources & drivers, datasources, botão add, add datasource
+Selecione PostgreSQL, next
+Preencha o campo Name com PostgresDS, next
+Mude o Driver Name para o nome do driver adicionado anteriormente (na setinha ele deve mostrar para ti a opção), next
+Mude a Connection URL com o nome do banco criado para a aplicação (jdbc:postgresql://localhost:5432/aplicacao_db)
+Preencha o User Name e o Password com o nome e senha do usuário criado no passo 10 (aplicacao_user, aplicacao_user), next
+Teste a conexão
+	Caso o teste resulte em falha, clique em back e verifique se os dados estão corretos
+	Caso os dados estejam corretos clique em next, next novamente e Finish
+	Reinicie o servidor Wildfly via Eclipse IDE
+	Retorne na página de administração do Wildfly, clique na setinha (ao lado da opção view) do Datasource recém criado (PostgresDS) e teste novamente (um popup com uma mensagem de sucessos ou falha aparecerá na tela)
+Finish
+
+20) Desabilitar integração JASPI(relacionado ao sistema de autenticação/autorização)
+Clique na aba configuration, menu subsystems, web, application security domain, other, botão view
+Dentro do menu Attributes, clique em Edit
+Desabilite (OFF) a opção Integrated JASPI
+Botão Save
+
+21) Desabilitar o uso de JTA (relacionado ao sistema de controle de transações usado com o Hibernate)
+Clique na aba configuration, menu subsystems, Datasources, clique em PostgresDS, botão view
+Dentro do menu Connection, clique em Edit
+Desabilite (OFF) a opção JTA
+Botão Save
+
+22) Reinicie o servidor Web (via IDE Eclipse) para que as alterações de configuração surtam efeito
+
+No GitHub Desktop
+23) Clone o repositório com a aplicação de exemplo
+Menu File, Clone Repository...
+Informe na aba URL: https://github.com/grandofelipe/projeto.git
+Escolha uma pasta para salvar o projeto
+
+No Eclipse
+24) Abra o projeto clonado
+Menu File, Open Projects from File System, Selecione a pasta /projeto
+
+25) Atualize as dependências do projeto e gere um novo war
+Clique com o botão direito no projeto, opção Maven, Update Project, Ok
+Aguarde um tempo e todos os erros (símbolos vermelhos) serão resolvidos
+
+26) Carregue a aplicação no Wildfly
+Para o servidor Wildfly, botão direito sobre o servidor na aba server, stop
+Arraste o projeto para a aba server dentro do servidor Wildfly
+Clique com o botão direito sobre a aplicação (dentro do servidor Wildfly), full publish
+Inicie o servidor de aplicação Wildfly novamente
+Observe o console do Eclipse, se existir muitas linhas iniciadas com ERROR verifique se as versões do Eclipse e do Wildfly estão corretas
+	Versão do Eclipse (deve ser 2022-09 4.25): Menu Help, About Eclipse IDE
+	Versão do Wildfly (deve ser v26.1.2.Final): Duplo clique em cima do Server Wildfly 24+ (dentro da aba Servers do Eclipse), clique no link Runtime Environment na página que abriu, verifique nome no Home Directory
+	
+27) Teste a aplicação Web
+Acesse em um navegador o endereço localhost:8080/projeto
+Uma página de login deve aparecer, tente acessar com o usuário e senha "admin"
+Caso apareça uma mensagem de login inválida, verifique novamente os passos 20, 21 e 22
+Depois de realizar o login, cadastre um novo usuário via sistema, aperte no botão novo e crie um usuário
+O novo usuário deverá aparecer na lista abaixo após ser criado
+
+28) (Opcional) Se quiser habilitar o acesso a aplicação de qualquer dispositivo conectado na mesma rede local
+OBS: esses passos devem ser executados com o servidor de aplicação parado
+No Eclipse, aba server, de um duplo clique no servidor Wildfly
+Na tela de configurações aberta procure o campo Host name, ao invés de localhost preencha com o valor 0.0.0.0
+Salve a configuração e inicie o servidor de aplicação
+No terminal do computador que está executando a aplicação digite ipconfig (Windows) ou ifconfig (Linux) para descobrir seu endereço de IPv4 na rede local
+Acesse em um navegador, através de qualquer dispositivo conectado localmente na mesma rede, o endereço enderecoip:8080/projeto
+
+Ordem de eventos:
+1) User clicks button in client
+2) onclick JavaScript code is executed
+3) JavaScript prepares ajax request based on process and current HTML DOM tree
+4) onstart JavaScript code is executed
+5) JavaScript sends ajax request from client to server
+6) JSF retrieves ajax request
+7) JSF processes the request lifecycle on JSF component tree based on process
+8) actionListener JSF backing bean method is executed
+9) action JSF backing bean method is executed
+10) JSF prepares ajax response based on update and current JSF component tree
+11) JSF sends ajax response from server to client
+12) JavaScript retrieves ajax response
+if HTTP response status is 200, onsuccess JavaScript code is executed
+else if HTTP response status is 500, onerror JavaScript code is executed
+13) JavaScript performs update based on ajax response and current HTML DOM tree
+14) oncomplete JavaScript code is executed
+
+Guia para desenvolvimento do projeto final integrador
+a) Comece pela modelagem e criação da base de dados
+Lembre de configurar adequadamente a conexão no servidor de aplicação (passo 17) 
+e no arquivo de configuração da API de segurança (src/main/java/../security/AppConfig)
+
+b) Revise/reveja os demais arquivos de configuração e realize ajustes se necessário
+src/main/webapp/WEB-INF/beans.xml (CDI)
+src/main/webapp/WEB-INF/faces-config.xml (JSF)
+src/main/webapp/WEB-INF/web.xml (configs gerais Web)
+src/pom.xml (Maven)
+
+c) Crie uma classe modelo respectiva para cada tabela do banco
+
+d) Crie um DAO para cada modelo conforme julgar necessário
+
+f) Esboce as páginas para o sistema, pense no que é comum a várias páginas e crie um Template
+
+g) Crie cada uma das páginas pensando nas funcionalidades (deixe o visual para depois) 
+crie uma classe Controller para cada página com as regras de negócio exigidas
+
+h) Pense nos recursos de autenticação/autorização necessários
+Crie páginas de login e controles necessários
+Retorne a cada um dos Controllers de cada página e pense nas restrições de acesso/autorização
+
+i) Teste toda a aplicação e vá pensando/elaborando melhorias no visual e de usabilidades
+teste sempre o caminho "feliz" primeiro, onde os dados são informados certinho
+depois que o caminho feliz estiver OK teste as validações e outros possíveis mal-usos que os usuários possam fazer da aplicação
+
+LEMBRE-SE
+somente arquivos públicos (FRONT-END) ficam dentro da pasta webapp (deve incluir páginas, scripts Javascript, CSS e Imagens)
+os arquivos xhtml são primeiramente interpretados pelo compilador para criar arquivos em HTML/Javascript/CSS puros no artefato final
+o conteúdo dessa pasta (arquivos) no artefato final é público, por padrão, para qualquer usuário do sistema Web

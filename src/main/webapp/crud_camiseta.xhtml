@@ -12,6 +12,7 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
     template="/WEB-INF/templates/default.xhtml">
     
     <!-- Usado para definir uso do Template -->
@@ -31,11 +32,11 @@
 	                    </div>
 	                    <div class="field">
 	                        <p:outputLabel for="descricao">Descrição</p:outputLabel>
-	                        <p:inputText id="descricao" value="#{crudCamisetaController.camiseta.descricao}" required="true"/>
+	                        <h:inputText id="descricao" value="#{crudCamisetaController.camiseta.descricao}" required="true"/>
 	                    </div>
 	                    <div class="field">
-	                        <p:outputLabel for="tamanho">Tamanho</p:outputLabel>
-	                        <p:inputText id="tamanho" value="#{crudCamisetaController.camiseta.tamanho}" required="true"/>
+	                        <p:outputLabel for="tamanho">#{crudCamisetaController.textoTamanho}</p:outputLabel>
+	                        <input type="text" jsf:id="tamanho" jsf:value="#{crudCamisetaController.camiseta.tamanho}" jsf:required="true"/>
 	                    </div>
 	                </p:outputPanel>
 	            </p:outputPanel>
