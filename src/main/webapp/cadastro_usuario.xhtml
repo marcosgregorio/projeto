@@ -91,24 +91,7 @@
 	                <h:outputText value="#{us.email}" />
 	            </p:column>
 
-	            <p:column>
-	            	<!-- Cuidado com botões que usam AJAX -->
-	            	<!-- process indica qual elemento do formulário será processado (padrão é todo o formulário), @this é só o próprio elemento -->
-	            	<!-- update informa qual elemento será atualizado (renderizado novamente) ao finalizar ação -->
-	            	<!-- é possível disparar ações para diversos eventos Javascript, deve-se cuidar a ordem da resolução dos mesmos -->
-	            	<!-- como regra geral a prioridade de processamento é a seguinte (eventos on... - oncomplete, onclick, onblur, actionListener, action, oncomplete no final) -->
-	            	<!-- PF é usado para chamada de função Javascript de algum elemento do Primefaces -->
-	                <p:commandButton icon="pi pi-pencil" update=":dialogs:usuario-conteudo-dialog" 
-	                    oncomplete="PF('usuarioDialog').show()" action="#{cadastroUsuarioController.alterar}"
-	                    styleClass="edit-button rounded-button ui-button-success" process="@this">
-	                    <f:setPropertyActionListener value="#{us}" target="#{cadastroUsuarioController.usuario}" />
-	                    <p:resetInput target=":dialogs:usuario-conteudo-dialog" />
-	                </p:commandButton>
-	                <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
-	                                 process="@this" oncomplete="PF('removerUsuarioDialog').show()">
-	                    <f:setPropertyActionListener value="#{us}" target="#{cadastroUsuarioController.usuario}" />
-	                </p:commandButton>
-	            </p:column>
+	            
 	
 	        </p:dataTable>
 	    </h:form>

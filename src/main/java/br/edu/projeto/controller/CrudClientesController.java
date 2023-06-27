@@ -1,11 +1,13 @@
 package br.edu.projeto.controller;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,141 +30,174 @@ import br.edu.projeto.model.Cliente;
 @Named
 public class CrudClientesController implements Serializable {
 	private static final long serialVersionUID = 1L;
+
+	// Anotação que marca atributo para ser gerenciado pelo CDI
+	// O CDI criará uma instância do objeto automaticamente quando necessário
+	@Inject
+	private FacesContext facesContext;
+
+	@Inject
+	private ClienteDAO clienteDAO;
+
+	private Cliente cliente;
+
+	private List<Cliente> listaClientes;
+
+	private Boolean rendNovoCadastro;
+
+	private String inputSearchNome;
 	
-	//Anotação que marca atributo para ser gerenciado pelo CDI
-		//O CDI criará uma instância do objeto automaticamente quando necessário
-		@Inject
-		private FacesContext facesContext;
-		
-		@Inject
-	    private ClienteDAO clienteDAO;
-		
-		private Cliente cliente;
-		
-		private List<Cliente> listaClientes;
-		
-		private Boolean rendNovoCadastro;
-		
-		private String inputSearchNome;
-		
-		//Anotação que força execução do método após o construtor da classe ser executado
-	    @PostConstruct
-	    public void init() {
-	    	//Inicializa elementos importantes
-	    	this.setListaClientes(clienteDAO.listAll());
-	    }
-	    
-	    //Chamado pelo botão novo
-		public void novoCadastro() {
-	        this.setCliente(new Cliente());
-	        this.setRendNovoCadastro(true);
-	    }
-		
-		//Chamado pelo botão alterar
-		public void alterarCadastro() {
-	        this.setRendNovoCadastro(false);
-	    }
-		
-		//Chamado pelo botão remover da tabela
-		public void remover() {
-			if (this.clienteDAO.delete(this.cliente)) {
-				this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Cliente Removida", null));
-				this.listaClientes.remove(this.cliente);
-			} else 
-				this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Remover Cliente", null));
-			//Após excluir usuário é necessário recarregar lista que popula tabela com os novos dados
-			//this.listaCamiseta = camisetaDAO.listAll();
-	        //Limpa seleção de usuário
-			this.cliente = null;
-	        PrimeFaces.current().ajax().update("form:messages", "form:dt-clientes");
-		}	
-		
-		//Chamado ao salvar cadastro de usuário (novo)
-		public void salvarNovo() {
-			if (this.cliente.getGenero().equals("M") || this.cliente.getGenero().equals("F") || this.cliente.getGenero().equals("O")) {
-				if (this.clienteDAO.insert(this.cliente)) {
-					this.getListaClientes().add(this.cliente);
-					PrimeFaces.current().executeScript("PF('clienteDialog').hide()");
-					PrimeFaces.current().ajax().update("form:dt-clientes");
-					this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "ClienteCriada", null));
-				} else
-	        		this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Criar Cliente", null));
-			} else {
-				this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Gênero inválido, deve ser M, F ou O!", null));
-	    	}   
-			PrimeFaces.current().ajax().update("form:messages");
-		}
-		
-		//Chamado ao salvar cadastro de usuário (alteracao)
-		public void salvarAlteracao() {
-			if (this.cliente.getGenero().equals("M") || this.cliente.getGenero().equals("F") || this.cliente.getGenero().equals("O")) {
-				if (this.clienteDAO.update(this.cliente)) {
-					PrimeFaces.current().executeScript("PF('clienteDialog').hide()");
-					PrimeFaces.current().ajax().update("form:dt-clientes");
-					this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Cliente Atualizado", null));
-				} else
-	        		this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Atualizar Cliente", null));
-			} else {
-				this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Gênero inválido, deve ser M, F ou O!", null));
-	    	}
-			this.setListaClientes(clienteDAO.listAll());
-			PrimeFaces.current().ajax().update("form:messages");
-		}
-		
-		public void filtrar() {
-			this.setListaClientes(this.clienteDAO.listaFiltrado(this.getInputSearchNome()));
-		}
-		
+	private List<String> selectedGenero;
+	
+	private List<String> optionsGenero;
 
-		public void setListaClientes(List<Cliente> listaClientes) {
-			this.listaClientes = listaClientes;
-		}
-		
-		public FacesContext getFacesContext() {
-			return facesContext;
-		}
+	// Anotação que força execução do método após o construtor da classe ser
+	// executado
+	@PostConstruct
+	public void init() {
+		// Inicializa elementos importantes
+		this.setListaClientes(clienteDAO.listAll());
+		this.optionsGenero = new ArrayList<>();
+		this.optionsGenero.add("M");
+		this.optionsGenero.add("F");
+		this.optionsGenero.add("O");
+	}
 
-		public void setFacesContext(FacesContext facesContext) {
-			this.facesContext = facesContext;
-		}
+	// Chamado pelo botão novo
+	public void novoCadastro() {
+		this.setCliente(new Cliente());
+		this.setRendNovoCadastro(true);
+	}
 
-		public ClienteDAO getClienteDAO() {
-			return clienteDAO;
-		}
+	// Chamado pelo botão alterar
+	public void alterarCadastro() {
+		this.setRendNovoCadastro(false);
+	}
 
-		public void setClienteDAO(ClienteDAO clienteDAO) {
-			this.clienteDAO = clienteDAO;
-		}
+	// Chamado pelo botão remover da tabela
+	public void remover() {
+		if (this.clienteDAO.delete(this.cliente)) {
+			this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Cliente Removida", null));
+			this.listaClientes.remove(this.cliente);
+		} else
+			this.facesContext.addMessage(null,
+					new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Remover Cliente", null));
+		// Após excluir usuário é necessário recarregar lista que popula tabela com os
+		// novos dados
+		// this.listaCamiseta = camisetaDAO.listAll();
+		// Limpa seleção de usuário
+		this.cliente = null;
+		PrimeFaces.current().ajax().update("form:messages", "form:dt-clientes");
+	}
 
-		public Cliente getCliente() {
-			return cliente;
+	// Chamado ao salvar cadastro de usuário (novo)
+	public void salvarNovo() {
+		if (this.cliente.getGenero().equals("M") || this.cliente.getGenero().equals("F")
+				|| this.cliente.getGenero().equals("O")) {
+			if (this.clienteDAO.insert(this.cliente)) {
+				this.getListaClientes().add(this.cliente);
+				PrimeFaces.current().executeScript("PF('clienteDialog').hide()");
+				PrimeFaces.current().ajax().update("form:dt-clientes");
+				this.facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "ClienteCriada", null));
+			} else
+				this.facesContext.addMessage(null,
+						new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Criar Cliente", null));
+		} else {
+			this.facesContext.addMessage(null,
+					new FacesMessage(FacesMessage.SEVERITY_WARN, "Gênero inválido, deve ser M, F ou O!", null));
 		}
+		PrimeFaces.current().ajax().update("form:messages");
+	}
 
-		public void setCliente(Cliente cliente) {
-			this.cliente = cliente;
+	// Chamado ao salvar cadastro de usuário (alteracao)
+	public void salvarAlteracao() {
+		if (this.cliente.getGenero().equals("M") || this.cliente.getGenero().equals("F")
+				|| this.cliente.getGenero().equals("O")) {
+			if (this.clienteDAO.update(this.cliente)) {
+				PrimeFaces.current().executeScript("PF('clienteDialog').hide()");
+				PrimeFaces.current().ajax().update("form:dt-clientes");
+				this.facesContext.addMessage(null,
+						new FacesMessage(FacesMessage.SEVERITY_INFO, "Cliente Atualizado", null));
+			} else
+				this.facesContext.addMessage(null,
+						new FacesMessage(FacesMessage.SEVERITY_ERROR, "Falha ao Atualizar Cliente", null));
+		} else {
+			this.facesContext.addMessage(null,
+					new FacesMessage(FacesMessage.SEVERITY_WARN, "Gênero inválido, deve ser M, F ou O!", null));
 		}
+		this.setListaClientes(clienteDAO.listAll());
+		PrimeFaces.current().ajax().update("form:messages");
+	}
 
-		public Boolean getRendNovoCadastro() {
-			return rendNovoCadastro;
-		}
+	public void filtrar() {
+		this.setListaClientes(this.clienteDAO.listaFiltrado(this.getInputSearchNome()));
+	}
 
-		public void setRendNovoCadastro(Boolean rendNovoCadastro) {
-			this.rendNovoCadastro = rendNovoCadastro;
-		}
+	public void setListaClientes(List<Cliente> listaClientes) {
+		this.listaClientes = listaClientes;	
+	}
 
-		public static long getSerialversionuid() {
-			return serialVersionUID;
-		}
+	public FacesContext getFacesContext() {
+		return facesContext;
+	}
 
-		public List<Cliente> getListaClientes() {
-			return listaClientes;
-		}
+	public void setFacesContext(FacesContext facesContext) {
+		this.facesContext = facesContext;
+	}
 
-		public String getInputSearchNome() {
-			return inputSearchNome;
-		}
+	public ClienteDAO getClienteDAO() {
+		return clienteDAO;
+	}
 
-		public void setInputSearchNome(String inputSearchNome) {
-			this.inputSearchNome = inputSearchNome;
-		}
+	public void setClienteDAO(ClienteDAO clienteDAO) {
+		this.clienteDAO = clienteDAO;
+	}
+
+	public Cliente getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+
+	public Boolean getRendNovoCadastro() {
+		return rendNovoCadastro;
+	}
+
+	public void setRendNovoCadastro(Boolean rendNovoCadastro) {
+		this.rendNovoCadastro = rendNovoCadastro;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public List<Cliente> getListaClientes() {
+		return listaClientes;
+	}
+
+	public String getInputSearchNome() {
+		return inputSearchNome;
+	}
+
+	public void setInputSearchNome(String inputSearchNome) {
+		this.inputSearchNome = inputSearchNome;
+	}
+
+	public List<String> getOptionsGenero() {
+		return optionsGenero;
+	}
+
+	public void setOptionsGenero(List<String> optionsGenero) {
+		this.optionsGenero = optionsGenero;
+	}
+
+	public List<String> getSelectedGenero() {
+		return selectedGenero;
+	}
+
+	public void setSelectedGenero(List<String> selectedGenero) {
+		this.selectedGenero = selectedGenero;
+	}
 }

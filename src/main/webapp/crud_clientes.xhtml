@@ -112,20 +112,25 @@
 						 <div>
 		                	<div class="ui-inputgroup">
 		            	        <p:inputText value="#{crudClientesController.inputSearchNome}" placeholder="Nome"/>
-		        	            <p:commandButton actionListener="#{crudClientesController.filtrar()}" icon="pi pi-search" styleClass="ui-button-warning"/>
+		        	            <p:commandButton actionListener="#{crudClientesController.filtrar()}"
+		        	            	update="dt-clientes" icon="pi pi-search" styleClass="ui-button-warning"/>
 	   		            	</div>
 			            </div>
 	                </div>
-	                <div>	
+             		<div>	
 	                    <span style="font-weight: bold">Gênero</span>
 						 	<div>						 	
-							  	<p:selectCheckboxMenu id="menu" value="#{checkboxView.selectedCities}" label="Selecione..." style="width: 15rem"
+							  	<p:selectCheckboxMenu id="menu" 
+							  		actionListener="#{crudClientesController.filtrar()}"
+							  		value="#{crudClientesController.selectedGenero}" 
+							  		label="Selecione..." 
+							  		style="width: 15rem"
 	                                filter="true" filterMatchMode="startsWith" panelStyle="width: 15rem" scrollHeight="250"
 	                                dynamic="true">
-				            		<f:selectItems value="#{checkboxView.cities}"/>
+				            		<f:selectItems value="#{crudClientesController.optionsGenero}"/>
 				        		</p:selectCheckboxMenu>
 						 	</div>
-	                </div>	            
+	                </div>
 	            </div>
 	            </f:facet>
 	            <p:column headerText="Id Cliente">
@@ -137,7 +142,9 @@
 	            <p:column headerText="Nome social">
 	                <h:outputText value="#{cliente.nome_social}" />
 	            </p:column>
-
+	            <p:column headerText="Gênero">
+	                <h:outputText value="#{cliente.genero}" />
+	            </p:column>
 	            <p:column>
 	            	<!-- Cuidado com botões que usam AJAX -->
 	            	<!-- process indica qual elemento do formulário será processado (padrão é todo o formulário), @this é só o próprio elemento -->

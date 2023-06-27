@@ -101,15 +101,23 @@ public class ClienteDAO implements Serializable {
         return clientes;
     }
     
-    public List<Cliente> listaFiltrado(String filtro1) {
+    public List<Cliente> listaFiltrado(String filtro1, List<String> filtro2) {
     	List<Cliente> clientes = new ArrayList<Cliente>();
-    	this.sql = "SELECT * FROM clientes";
-    	if (!filtro1.equals(""))
-    			this.sql += "WHERE nome ilike '%" + filtro1 + "%'";
+    	this.sql = "SELECT * FROM clientes ";
+		this.sql += "WHERE nome ilike '" + filtro1 + "%'";
+		String str;
+		
+		if (!filtro2.equals("")) {
+			String[] filtroString = filtro2.toArray(new String[0]);	
+			str = String.join(", ", filtroString);
+			System.out.println(str + "AAAAAAAAAAAAAAAAAA");
+			this.sql += "AND genero in (" + filtro2 + ")";			
+		}
     	try {
     		this.prepareQuery();
-			this.result = this.preparedStatement.executeQuery();
+    		this.result = this.preparedStatement.executeQuery();
 			while (result.next()) {
+				
 				Cliente cliente = new Cliente();
 				cliente.setEmail(this.result.getString("email"));
 				cliente.setId_cliente(this.result.getInt("id_cliente"));
@@ -128,9 +136,10 @@ public class ClienteDAO implements Serializable {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
+			System.out.println("cheguei no finally");
 			this.closeDbConnection();
 		}
-        return clientes;
+    	return clientes;
     }
     
     public Boolean insert(Cliente cliente) {
